@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 void main() {
   runApp(const CryptoCurrenciesListApp());
@@ -13,53 +16,111 @@ class CryptoCurrenciesListApp extends StatelessWidget {
     return MaterialApp(
       title: 'Crypto Currencies List',
       theme: ThemeData(
-        appBarTheme: AppBarTheme(backgroundColor: Colors.pink),
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.pink),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color.fromARGB(255, 31, 31, 31),
+          surfaceTintColor: Color.fromARGB(255, 31, 31, 31),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.yellow),
+        scaffoldBackgroundColor: const Color.fromARGB(255, 31, 31, 31),
+        dividerTheme: DividerThemeData(color: Colors.white24),
+        listTileTheme: ListTileThemeData(iconColor: Colors.white),
+        textTheme: const TextTheme(
+          bodySmall: TextStyle(
+            // withValues(alpha: ...) = withOpacity
+            color: Color.fromARGB(153, 255, 255, 255),
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+          ),
+          bodyMedium: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
+          ),
+        ),
       ),
-      home: const MyHomePage(),
+      routes: {
+        '/': (context) => CryptoListScreen(),
+        '/coin': (context) => CryptoCoinScreen(),
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+class CryptoListScreen extends StatefulWidget {
+  const CryptoListScreen({super.key});
 
   final String title = 'Crypto Currencies List';
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<CryptoListScreen> createState() => _CryptoListScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _CryptoListScreenState extends State<CryptoListScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.title)),
+      body: ListView.separated(
+        itemCount: 10,
+        separatorBuilder: (context, index) => Divider(),
+        itemBuilder: (context, i) {
+          const coinName = 'RNT';
+
+          return ListTile(
+            leading: SvgPicture.asset(
+              'svg/bitcoin_logo.svg',
+              semanticsLabel: 'BTC Logo',
+              height: 30,
+              width: 30,
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.pushNamed(context, '/coin', arguments: coinName);
+            },
+            title: Text(
+              '$coinName $i',
+              style: theme(context).textTheme.bodyMedium,
+            ),
+            subtitle: Text('2000\$', style: theme(context).textTheme.bodySmall),
+          );
+        },
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class CryptoCoinScreen extends StatefulWidget {
+  const CryptoCoinScreen({super.key});
+
+  @override
+  State<CryptoCoinScreen> createState() => _CryptoCoinScreenState();
+}
+
+class _CryptoCoinScreenState extends State<CryptoCoinScreen> {
+  String? coinName;
+
+  @override
+  void didChangeDependencies() {
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    assert(args != null && args is String, 'Invalid args');
+
+    coinName = args as String;
+
+    setState(() {});
+
+    super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+    return Scaffold(appBar: AppBar(title: Text(coinName ?? '...')));
   }
 }
