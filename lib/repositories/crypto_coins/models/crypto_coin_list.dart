@@ -1,4 +1,4 @@
-import 'package:crypto_currencies_app/models/models.dart';
+import 'package:crypto_currencies_app/repositories/crypto_coins/models/models.dart';
 
 class CryptoCoinListStats {
   final int page;

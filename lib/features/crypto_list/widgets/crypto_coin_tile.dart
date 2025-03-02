@@ -1,4 +1,4 @@
-import 'package:crypto_currencies_app/models/models.dart';
+import 'package:crypto_currencies_app/repositories/crypto_coins/models/models.dart';
 import 'package:flutter/material.dart';
 
 class CryptoCoinTile extends StatelessWidget {
