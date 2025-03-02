@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:crypto_currencies_app/features/crypto_list/bloc/bloc.dart';
 import 'package:crypto_currencies_app/features/crypto_list/widgets/widgets.dart';
 import 'package:crypto_currencies_app/repositories/repositories.dart';
@@ -16,60 +18,25 @@ class CryptoListScreen extends StatefulWidget {
 
 class _CryptoListScreenState extends State<CryptoListScreen> {
   final ScrollController controller = ScrollController();
-  CryptoCoinList? _coinsList;
-  int pageNumber = 1;
-  bool isLoading = false;
+  // int pageNumber = 1;
   bool showFloatingBtn = false;
 
   final _cryptoListBloc = CryptoListBloc(GetIt.I<AbstractCoinsRepository>());
 
   Future<void> fetchCoins() async {
-    _cryptoListBloc.add(LoadCryptoList());
-
-    if (isLoading) return;
-
-    setState(() {
-      isLoading = true;
-    });
-
-    // TESTING
-    CryptoCoinList newCoins = CryptoCoinList(
-      items: [],
-      pagination: CryptoCoinListStats(count: 10, page: 1, pageSize: 10),
-    );
-
-    try {
-      newCoins = await GetIt.I<AbstractCoinsRepository>().getCoinsList(
-        page: pageNumber,
-      );
-    } catch (e) {}
-
-    if (!mounted) return;
-
-    setState(() {
-      if (_coinsList == null) {
-        _coinsList = newCoins;
-      } else {
-        _coinsList!.items.addAll(newCoins.items);
-      }
-      isLoading = false;
-    });
+    _cryptoListBloc.add(LoadCryptoList(null));
   }
 
   Future<void> refreshList() async {
-    setState(() {
-      pageNumber = 1;
-      _coinsList = null;
-    });
-
-    await fetchCoins();
+    final completer = Completer();
+    _cryptoListBloc.add(LoadCryptoList(completer));
+    return completer.future;
   }
 
   void _scrollListener() {
     if (controller.position.pixels >=
-            controller.position.maxScrollExtent - 100 &&
-        !isLoading) {
-      pageNumber++;
+        controller.position.maxScrollExtent - 100) {
+      // pageNumber++;
       fetchCoins();
     }
   }
@@ -101,8 +68,6 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<CryptoCoin> coins = _coinsList?.items ?? [];
-
     return RefreshIndicator(
       backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       onRefresh: refreshList,
@@ -111,22 +76,6 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
         body: BlocBuilder<CryptoListBloc, CryptoListState>(
           bloc: _cryptoListBloc,
           builder: (context, state) {
-            if (state is CryptoListLoaded) {
-              return ListView.separated(
-                controller: controller,
-                padding: const EdgeInsets.only(top: 16),
-                itemCount: coins.length + (isLoading ? 1 : 0),
-                separatorBuilder: (context, index) => const Divider(),
-                itemBuilder: (context, i) {
-                  if (i == coins.length) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final coin = coins[i];
-                  return CryptoCoinTile(coin: coin);
-                },
-              );
-            }
-
             if (state is CryptoListLoadingFailure) {
               final theme = Theme.of(context);
 
@@ -143,28 +92,37 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
                       'Please try again later',
                       style: theme.textTheme.labelSmall,
                     ),
+                    SizedBox(height: 30),
+                    TextButton(
+                      onPressed: fetchCoins,
+                      child: const Text('Try again'),
+                    ),
                   ],
                 ),
+              );
+            }
+
+            if (state is CryptoListLoaded) {
+              return ListView.separated(
+                controller: controller,
+                padding: const EdgeInsets.only(top: 16),
+                itemCount: state.coinsList.items.length,
+                // + (isLoading ? 1 : 0),
+                separatorBuilder: (context, index) => const Divider(),
+                itemBuilder: (context, i) {
+                  // if (i == state.coinsList.items.length) {
+                  //   return const Center(child: CircularProgressIndicator());
+                  // }
+                  // For autoloading new data
+                  final coin = state.coinsList.items[i];
+                  return CryptoCoinTile(coin: coin);
+                },
               );
             }
 
             return const Center(child: CircularProgressIndicator());
           },
         ),
-        // ? const Center(child: CircularProgressIndicator())
-        // : ListView.separated(
-        //   controller: controller,
-        //   padding: const EdgeInsets.only(top: 16),
-        //   itemCount: coins.length + (isLoading ? 1 : 0),
-        //   separatorBuilder: (context, index) => const Divider(),
-        //   itemBuilder: (context, i) {
-        //     if (i == coins.length) {
-        //       return const Center(child: CircularProgressIndicator());
-        //     }
-        //     final coin = coins[i];
-        //     return CryptoCoinTile(coin: coin);
-        //   },
-        // ),
         floatingActionButton:
             showFloatingBtn
                 ? FloatingActionButton(
