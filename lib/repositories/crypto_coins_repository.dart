@@ -1,7 +1,8 @@
-import 'package:dio/dio.dart';
+import 'package:crypto_currencies_app/repositories/abstract/abstract.dart';
 import 'package:crypto_currencies_app/models/models.dart';
+import 'package:dio/dio.dart';
 
-class CryptoCoinsRepository {
+class CryptoCoinsRepository implements AbstractCoinsRepository {
   final _api = Dio(
     BaseOptions(
       baseUrl: 'https://data-api.coindesk.com',
@@ -12,6 +13,7 @@ class CryptoCoinsRepository {
     ),
   );
 
+  @override
   Future<CryptoCoinList> getCoinsList(int page) async {
     final response = await _api.get(
       '/asset/v1/top/list?page=$page&page_size=10&sort_by=CIRCULATING_MKT_CAP_USD&sort_direction=DESC&groups=ID,BASIC,SUPPLY,PRICE,MKT_CAP,VOLUME,CHANGE,TOPLIST_RANK&toplist_quote_asset=USD',

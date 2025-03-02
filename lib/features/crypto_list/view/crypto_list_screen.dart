@@ -19,7 +19,7 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
   bool isLoading = false;
   bool showFloatingBtn = false;
 
-  void fetchCoins() async {
+  Future<void> fetchCoins() async {
     if (isLoading) return;
 
     setState(() {
@@ -28,7 +28,7 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
 
     final newCoins = await CryptoCoinsRepository().getCoinsList(pageNumber);
 
-    if (!mounted) return; // Захист від виклику setState після dispose
+    if (!mounted) return;
 
     setState(() {
       if (_coinsList == null) {
@@ -38,6 +38,15 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
       }
       isLoading = false;
     });
+  }
+
+  Future<void> refreshList() async {
+    setState(() {
+      pageNumber = 1;
+      _coinsList = null;
+    });
+
+    await fetchCoins();
   }
 
   void _scrollListener() {
@@ -78,37 +87,41 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
   Widget build(BuildContext context) {
     final List<CryptoCoin> coins = _coinsList?.items ?? [];
 
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body:
-          coins.isEmpty && isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.separated(
-                controller: controller,
-                padding: const EdgeInsets.only(top: 16),
-                itemCount: coins.length + (isLoading ? 1 : 0),
-                separatorBuilder: (context, index) => const Divider(),
-                itemBuilder: (context, i) {
-                  if (i == coins.length) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  final coin = coins[i];
-                  return CryptoCoinTile(coin: coin);
-                },
-              ),
-      floatingActionButton:
-          showFloatingBtn
-              ? FloatingActionButton(
-                onPressed: () {
-                  controller.animateTo(
-                    0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOut,
-                  );
-                },
-                child: const Icon(Icons.arrow_upward),
-              )
-              : null,
+    return RefreshIndicator(
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+      onRefresh: refreshList,
+      child: Scaffold(
+        appBar: AppBar(title: Text(widget.title)),
+        body:
+            coins.isEmpty && isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.separated(
+                  controller: controller,
+                  padding: const EdgeInsets.only(top: 16),
+                  itemCount: coins.length + (isLoading ? 1 : 0),
+                  separatorBuilder: (context, index) => const Divider(),
+                  itemBuilder: (context, i) {
+                    if (i == coins.length) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final coin = coins[i];
+                    return CryptoCoinTile(coin: coin);
+                  },
+                ),
+        floatingActionButton:
+            showFloatingBtn
+                ? FloatingActionButton(
+                  onPressed: () {
+                    controller.animateTo(
+                      0,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                  child: const Icon(Icons.arrow_upward),
+                )
+                : null,
+      ),
     );
   }
 }
