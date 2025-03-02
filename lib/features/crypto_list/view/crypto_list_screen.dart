@@ -13,10 +13,11 @@ class CryptoListScreen extends StatefulWidget {
 }
 
 class _CryptoListScreenState extends State<CryptoListScreen> {
-  ScrollController controller = ScrollController();
+  final ScrollController controller = ScrollController();
   CryptoCoinList? _coinsList;
   int pageNumber = 1;
   bool isLoading = false;
+  bool showFloatingBtn = false;
 
   void fetchCoins() async {
     if (isLoading) return;
@@ -26,6 +27,8 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
     });
 
     final newCoins = await CryptoCoinsRepository().getCoinsList(pageNumber);
+
+    if (!mounted) return; // Захист від виклику setState після dispose
 
     setState(() {
       if (_coinsList == null) {
@@ -48,14 +51,26 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
 
   @override
   void initState() {
-    controller.addListener(_scrollListener);
-    fetchCoins();
     super.initState();
+    controller.addListener(_scrollListener);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.addListener(() {
+        bool shouldShowBtn =
+            controller.position.pixels > MediaQuery.of(context).size.height;
+        if (showFloatingBtn != shouldShowBtn) {
+          setState(() => showFloatingBtn = shouldShowBtn);
+        }
+      });
+    });
+
+    fetchCoins();
   }
 
   @override
   void dispose() {
     controller.removeListener(_scrollListener);
+    controller.dispose();
     super.dispose();
   }
 
@@ -72,7 +87,7 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
                 controller: controller,
                 padding: const EdgeInsets.only(top: 16),
                 itemCount: coins.length + (isLoading ? 1 : 0),
-                separatorBuilder: (context, index) => Divider(),
+                separatorBuilder: (context, index) => const Divider(),
                 itemBuilder: (context, i) {
                   if (i == coins.length) {
                     return const Center(child: CircularProgressIndicator());
@@ -81,6 +96,19 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
                   return CryptoCoinTile(coin: coin);
                 },
               ),
+      floatingActionButton:
+          showFloatingBtn
+              ? FloatingActionButton(
+                onPressed: () {
+                  controller.animateTo(
+                    0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                  );
+                },
+                child: const Icon(Icons.arrow_upward),
+              )
+              : null,
     );
   }
 }
