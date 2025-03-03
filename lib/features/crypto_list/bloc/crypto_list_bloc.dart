@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:crypto_currencies_app/repositories/crypto_coins/crypto_coins.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part './crypto_list_event.dart';

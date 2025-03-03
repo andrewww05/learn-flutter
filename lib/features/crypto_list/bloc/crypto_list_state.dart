@@ -1,10 +1,13 @@
 part of './crypto_list_bloc.dart';
 
-class CryptoListState {
+abstract class CryptoListState extends Equatable {
   final int page;
   final List<CryptoCoin> coinsList;
 
-  CryptoListState({required this.page, required this.coinsList});
+  const CryptoListState({required this.page, required this.coinsList});
+
+  @override
+  List<Object?> get props => [page, coinsList];
 }
 
 class CryptoListInitial extends CryptoListState {
@@ -13,14 +16,20 @@ class CryptoListInitial extends CryptoListState {
 
 class CryptoListLoading extends CryptoListState {
   CryptoListLoading() : super(page: 1, coinsList: []);
+
+  @override
+  List<Object?> get props => [];
 }
 
 class CryptoListLoadingMore extends CryptoListState {
-  CryptoListLoadingMore({required super.coinsList, required super.page});
+  const CryptoListLoadingMore({required super.coinsList, required super.page});
+
+  @override
+  List<Object?> get props => [];
 }
 
 class CryptoListLoaded extends CryptoListState {
-  CryptoListLoaded({required super.coinsList, required super.page});
+  const CryptoListLoaded({required super.coinsList, required super.page});
 }
 
 class CryptoListLoadingFailure extends CryptoListState {
@@ -28,4 +37,7 @@ class CryptoListLoadingFailure extends CryptoListState {
 
   CryptoListLoadingFailure({required this.exception})
     : super(page: 1, coinsList: []);
+
+  @override
+  List<Object?> get props => [exception];
 }

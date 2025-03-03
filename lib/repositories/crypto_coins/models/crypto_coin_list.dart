@@ -1,11 +1,12 @@
 import 'package:crypto_currencies_app/repositories/crypto_coins/models/models.dart';
+import 'package:equatable/equatable.dart';
 
-class CryptoCoinListStats {
+class CryptoCoinListStats extends Equatable {
   final int page;
   final int pageSize;
   final int count;
 
-  CryptoCoinListStats({
+  const CryptoCoinListStats({
     required this.page,
     required this.pageSize,
     required this.count,
@@ -18,13 +19,16 @@ class CryptoCoinListStats {
       count: json['TOTAL_ASSETS'] ?? 0,
     );
   }
+
+  @override
+  List<Object?> get props => [page, pageSize, count];
 }
 
-class CryptoCoinList {
+class CryptoCoinList extends Equatable {
   final List<CryptoCoin> items;
   final CryptoCoinListStats pagination;
 
-  CryptoCoinList({required this.items, required this.pagination});
+  const CryptoCoinList({required this.items, required this.pagination});
 
   factory CryptoCoinList.fromJson(Map<String, dynamic> json) {
     final List<dynamic> list = json['Data']['LIST'] ?? [];
@@ -34,4 +38,7 @@ class CryptoCoinList {
       items: list.map((item) => CryptoCoin.fromJson(item)).toList(),
     );
   }
+
+  @override
+  List<Object?> get props => [items, pagination];
 }
