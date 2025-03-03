@@ -15,6 +15,10 @@ class CryptoListLoading extends CryptoListState {
   CryptoListLoading() : super(page: 1, coinsList: []);
 }
 
+class CryptoListLoadingMore extends CryptoListState {
+  CryptoListLoadingMore({required super.coinsList, required super.page});
+}
+
 class CryptoListLoaded extends CryptoListState {
   CryptoListLoaded({required super.coinsList, required super.page});
 }

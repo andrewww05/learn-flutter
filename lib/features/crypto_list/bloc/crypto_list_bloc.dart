@@ -14,14 +14,9 @@ class CryptoListBloc extends Bloc<CryptoListEvent, CryptoListState> {
           emit(CryptoListLoading());
         }
 
-        final coinsList = await coinsRepository.getCoinsList(page: state.page);
+        final coinsList = await coinsRepository.getCoinsList(page: 1);
 
-        emit(
-          CryptoListLoaded(
-            coinsList: coinsList.items,
-            page: coinsList.pagination.page,
-          ),
-        );
+        emit(CryptoListLoaded(coinsList: coinsList.items, page: 1));
       } catch (e) {
         emit(CryptoListLoadingFailure(exception: e));
       } finally {
@@ -31,6 +26,10 @@ class CryptoListBloc extends Bloc<CryptoListEvent, CryptoListState> {
 
     on<LoadCryptoListMore>((event, emit) async {
       try {
+        emit(
+          CryptoListLoadingMore(page: state.page, coinsList: state.coinsList),
+        );
+
         final newCoins = await coinsRepository.getCoinsList(
           page: state.page + 1,
         );

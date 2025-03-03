@@ -105,18 +105,18 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
               );
             }
 
-            if (state is CryptoListLoaded) {
+            if (state is CryptoListLoaded || state is CryptoListLoadingMore) {
+              final bool isLoading = state is CryptoListLoadingMore;
+
               return ListView.separated(
                 controller: controller,
                 padding: const EdgeInsets.only(top: 16),
-                itemCount: state.coinsList.length,
-                // + (isLoading ? 1 : 0),
+                itemCount: state.coinsList.length + (isLoading ? 1 : 0),
                 separatorBuilder: (context, index) => const Divider(),
                 itemBuilder: (context, i) {
-                  // if (i == state.coinsList.length) {
-                  //   return const Center(child: CircularProgressIndicator());
-                  // }
-                  // For autoloading new data
+                  if (i == state.coinsList.length) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   final coin = state.coinsList[i];
                   return CryptoCoinTile(coin: coin);
                 },
