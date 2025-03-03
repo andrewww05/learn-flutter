@@ -1,19 +1,27 @@
 part of './crypto_list_bloc.dart';
 
-class CryptoListState {}
+class CryptoListState {
+  final int page;
+  final List<CryptoCoin> coinsList;
 
-class CryptoListInitial extends CryptoListState {}
+  CryptoListState({required this.page, required this.coinsList});
+}
 
-class CryptoListLoading extends CryptoListState {}
+class CryptoListInitial extends CryptoListState {
+  CryptoListInitial() : super(page: 1, coinsList: []);
+}
+
+class CryptoListLoading extends CryptoListState {
+  CryptoListLoading() : super(page: 1, coinsList: []);
+}
 
 class CryptoListLoaded extends CryptoListState {
-  final CryptoCoinList coinsList;
-
-  CryptoListLoaded({required this.coinsList});
+  CryptoListLoaded({required super.coinsList, required super.page});
 }
 
 class CryptoListLoadingFailure extends CryptoListState {
   final Object? exception;
 
-  CryptoListLoadingFailure({required this.exception});
+  CryptoListLoadingFailure({required this.exception})
+    : super(page: 1, coinsList: []);
 }
