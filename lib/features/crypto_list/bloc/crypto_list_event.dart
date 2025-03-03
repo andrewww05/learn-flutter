@@ -7,3 +7,9 @@ class LoadCryptoList extends CryptoListEvent {
 
   LoadCryptoList(this.completer);
 }
+
+class LoadCryptoListMore extends CryptoListEvent {
+  final Completer? completer;
+
+  LoadCryptoListMore(this.completer);
+}

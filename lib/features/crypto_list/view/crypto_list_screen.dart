@@ -24,7 +24,9 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
   final _cryptoListBloc = CryptoListBloc(GetIt.I<AbstractCoinsRepository>());
 
   Future<void> fetchCoins() async {
-    _cryptoListBloc.add(LoadCryptoList(null));
+    final completer = Completer();
+    _cryptoListBloc.add(LoadCryptoList(completer));
+    return completer.future;
   }
 
   Future<void> refreshList() async {
@@ -33,11 +35,12 @@ class _CryptoListScreenState extends State<CryptoListScreen> {
     return completer.future;
   }
 
-  void _scrollListener() {
+  void _scrollListener() async {
     if (controller.position.pixels >=
         controller.position.maxScrollExtent - 100) {
-      // pageNumber++;
-      fetchCoins();
+      final completer = Completer();
+      _cryptoListBloc.add(LoadCryptoListMore(completer));
+      return completer.future;
     }
   }
 

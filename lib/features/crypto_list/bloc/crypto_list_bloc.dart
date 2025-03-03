@@ -14,12 +14,34 @@ class CryptoListBloc extends Bloc<CryptoListEvent, CryptoListState> {
           emit(CryptoListLoading());
         }
 
-        final coinsList = await coinsRepository.getCoinsList(page: 1);
+        final coinsList = await coinsRepository.getCoinsList(page: state.page);
 
         emit(
           CryptoListLoaded(
             coinsList: coinsList.items,
             page: coinsList.pagination.page,
+          ),
+        );
+      } catch (e) {
+        emit(CryptoListLoadingFailure(exception: e));
+      } finally {
+        event.completer?.complete();
+      }
+    });
+
+    on<LoadCryptoListMore>((event, emit) async {
+      try {
+        final newCoins = await coinsRepository.getCoinsList(
+          page: state.page + 1,
+        );
+
+        final List<CryptoCoin> coinsList = List.from(state.coinsList)
+          ..addAll(newCoins.items);
+
+        emit(
+          CryptoListLoaded(
+            coinsList: coinsList,
+            page: newCoins.pagination.page,
           ),
         );
       } catch (e) {
